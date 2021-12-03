@@ -20,6 +20,6 @@ internal class SubmarineTest {
         val lines = PuzzleInputTestUtils.getPuzzleInputLines("day2.txt")
         val submarine = Submarine()
 
-        assertEquals(1451208, submarine.calculatePositionPart2(lines))
+        assertEquals(1620141160, submarine.calculatePositionPart2(lines))
     }
 }
