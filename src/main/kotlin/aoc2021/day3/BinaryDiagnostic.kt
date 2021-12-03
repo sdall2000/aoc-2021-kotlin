@@ -26,13 +26,13 @@ class BinaryDiagnostic {
 
     fun calculateLifeSupportRating(diagnosticReport: List<String>): Int {
 
-        val oxygen = getOxy(diagnosticReport, 0)
+        val oxygen = getOxygen(diagnosticReport, 0)
         val co2 = getCo2(diagnosticReport, 0)
 
         return oxygen * co2
     }
 
-    private fun getOxy(candidates: List<String>, index: Int): Int {
+    private fun getOxygen(candidates: List<String>, index: Int): Int {
         // Recursion termination
         if (candidates.size == 1) {
             return candidates[0].toInt(2)
@@ -47,7 +47,7 @@ class BinaryDiagnostic {
             targetChar = '1'
         }
 
-        return getOxy(candidates.filter { it[index] == targetChar }, index + 1)
+        return getOxygen(candidates.filter { it[index] == targetChar }, index + 1)
     }
 
     private fun getCo2(candidates: List<String>, index: Int): Int {
