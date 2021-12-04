@@ -67,11 +67,15 @@ class Bingo {
     class Board(boardRows: List<String>) {
         private var boardGrid = mutableListOf<List<Int>>()
         private var boardMap = mutableMapOf<Int, Coordinate>()
-        private var rowCounts = arrayOf(5, 5, 5, 5, 5)
-        private var colCounts = arrayOf(5, 5, 5, 5, 5)
+        private var rowCounts:IntArray
+        private var colCounts:IntArray
         private var winner = false
 
         init {
+            // Track how many numbers are left in a given row/column.
+            // Once a value goes to zero, the bingo card is solved.
+            rowCounts = IntArray(boardRows.size) { boardRows.size}
+            colCounts = IntArray(boardRows.size) { boardRows.size}
 
             boardRows.forEachIndexed { indexRow, line ->
                 val numbers = line.trim().split("\\s+".toRegex()).map { n -> n.trim().toInt() }.toMutableList()
