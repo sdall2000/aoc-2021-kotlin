@@ -51,35 +51,41 @@ class Bingo {
         val boards = mutableListOf<Board>()
 
         for (i in 1 until lines.size) {
-            if (lines[i].trim().isNotEmpty()) {
-                boardRows.add(lines[i])
-                if (boardRows.size == 5) {
-                    // We have a full board.
-                    boards.add(Board(boardRows))
-                    boardRows.clear()
-                }
+            if (lines[i].isNotEmpty()) {
+                boardRows.add(lines[i].trim())
+            } else if (boardRows.size > 0) {
+                // We are on an empty line and we have board rows.  Create a board.
+                boards.add(Board(boardRows))
+                boardRows.clear()
             }
         }
+
+        // If there are still boardRows in the collection, then we need to build our final board.
+        boards.add(Board(boardRows))
 
         return boards
     }
 
     class Board(boardRows: List<String>) {
-        private var boardGrid = mutableListOf<List<Int>>()
         private var boardMap = mutableMapOf<Int, Coordinate>()
-        private var rowCounts:IntArray
-        private var colCounts:IntArray
+        private var rowCounts: IntArray
+        private var colCounts: IntArray
         private var winner = false
 
         init {
             // Track how many numbers are left in a given row/column.
             // Once a value goes to zero, the bingo card is solved.
-            rowCounts = IntArray(boardRows.size) { boardRows.size}
-            colCounts = IntArray(boardRows.size) { boardRows.size}
+            val boardRowSize = boardRows.size
+            val boardColumnSize = boardRows[0].split("\\s+".toRegex()).size
+
+            // So in a 5x5 board, this creates an array of 5 entries, all initialized to 5.
+            // As bingo numbers are played, the corresponding row/column will be decremented.
+            // When zero is reached in either a row or a column, the board is solved.
+            rowCounts = IntArray(boardRowSize) { boardRowSize }
+            colCounts = IntArray(boardColumnSize) { boardColumnSize }
 
             boardRows.forEachIndexed { indexRow, line ->
                 val numbers = line.trim().split("\\s+".toRegex()).map { n -> n.trim().toInt() }.toMutableList()
-                boardGrid.add(numbers)
 
                 numbers.forEachIndexed { indexCol, number ->
                     boardMap[number] = Coordinate(indexRow, indexCol)
