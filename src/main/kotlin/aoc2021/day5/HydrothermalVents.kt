@@ -56,23 +56,16 @@ data class Point(val x: Int, val y: Int)
 
 data class Line(val point1: Point, val point2: Point) {
     fun getPoints(): List<Point> {
-        var xInc = 1
-        var yInc = 1
+        // Using compareTo will give us the correct increment for the given axis.
+        // Either -1, 0, or 1.
+        val xInc = point2.x.compareTo(point1.x)
+        val yInc = point2.y.compareTo(point1.y)
+
+        // Calculate the total number of points for the line segment.
         val totalPoints =
             abs(point1.x - point2.x).coerceAtLeast(abs(point1.y - point2.y)) + 1
 
         val points = mutableListOf<Point>()
-        if (point1.x == point2.x) {
-            xInc = 0
-        } else if (point1.x > point2.x) {
-            xInc = -1
-        }
-
-        if (point1.y == point2.y) {
-            yInc = 0
-        } else if (point1.y > point2.y) {
-            yInc = -1
-        }
 
         // Starting x/y
         var x = point1.x
