@@ -13,7 +13,7 @@ class HydrothermalVents {
         return countPointOverlaps(lines, pointThreshold)
     }
 
-    private fun buildLines(input:List<String>, includeDiagonal:Boolean):List<Line> {
+    private fun buildLines(input: List<String>, includeDiagonal: Boolean): List<Line> {
         val lines = mutableListOf<Line>()
 
         input.forEach {
@@ -25,7 +25,7 @@ class HydrothermalVents {
             val point1 = Point(x1.toInt(), y1.toInt())
             val point2 = Point(x2.toInt(), y2.toInt())
 
-            if (includeDiagonal || (point1.x == point2.x || point1.y == point2.y )) {
+            if (includeDiagonal || (point1.x == point2.x || point1.y == point2.y)) {
                 val line = Line(point1, point2)
                 lines.add(line)
             }
@@ -34,18 +34,13 @@ class HydrothermalVents {
         return lines
     }
 
-    private fun countPointOverlaps(lines:List<Line>, pointThreshold:Int):Int {
+    private fun countPointOverlaps(lines: List<Line>, pointThreshold: Int): Int {
+        // Container for storing total counts per point
         val pointMap = mutableMapOf<Point, Int>()
 
+        // Groups by point and their counts
         lines.forEach { line ->
-            line.getPoints().forEach { point ->
-                if (pointMap.contains(point)) {
-                    val c = pointMap[point]
-                    pointMap[point] = c!! + 1
-                } else {
-                    pointMap[point] = 1
-                }
-            }
+            line.getPoints().groupingBy { it }.eachCountTo(pointMap)
         }
 
         return pointMap.count { it.value >= pointThreshold }
