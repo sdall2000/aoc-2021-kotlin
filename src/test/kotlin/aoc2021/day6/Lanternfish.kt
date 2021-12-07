@@ -1,53 +1,24 @@
 package aoc2021.day6
 
 class Lanternfish {
-    fun countLanternfishGrowth(lanternFish:List<Int>, days:Int): Long {
+    fun getLanternFishPopulation(lanternFish: List<Int>, days: Int): Long {
+        // Declare an array where the index represents the timer.  For this problem that will range from 0 to 8.
+        val lanternFishTimer = LongArray(9)
 
-        // Convert to a map<Timer, Count>
-        // Where Timer is a possible timer number, 0-8.
-        // Count is how many lanternfish of those timers exist.
-        val mutableLanternFish = mutableMapOf<Int, Long>()
-
-        lanternFish.forEach { addLanternfishTimer(mutableLanternFish, it)}
-
-//        println("Start: $mutableLanternFish")
+        // Seed the lanterFishTimer array with the lanternFish parameter
+        lanternFish.forEach { lanternFishTimer[it]++ }
 
         repeat(days) {
-            val newSpawns = mutableLanternFish[0]
+            // Save off the count of timers that are zero.  This is how many new fish we need to spawn.
+            // It also represents how many parent fish are added to the 6th index.
+            val newSpawns = lanternFishTimer[0]
 
-            for (i in 0..7) {
-                val nextCount = mutableLanternFish[i+1]
+            lanternFishTimer.copyInto(lanternFishTimer, 0, 1)
 
-                if (nextCount != null) {
-                    mutableLanternFish[i] = nextCount
-                } else {
-                    mutableLanternFish[i] = 0
-                }
-            }
-
-            if (newSpawns != null) {
-                mutableLanternFish[8] = newSpawns
-                // Add the fish that spawned another fish to the "6" timer
-                mutableLanternFish[6] = mutableLanternFish[6]!! + newSpawns
-            } else {
-                mutableLanternFish[8] = 0
-            }
-
-//            println(mutableLanternFish)
+            lanternFishTimer[8] = newSpawns
+            lanternFishTimer[6] += newSpawns
         }
 
-        var sum:Long = 0
-
-        mutableLanternFish.forEach { (_, b) -> sum+=b}
-
-        return sum
-    }
-
-    private fun addLanternfishTimer(timerMap:MutableMap<Int, Long>, timer:Int) {
-        if (timerMap.contains(timer)) {
-            timerMap[timer] = timerMap[timer]!! + 1
-        } else {
-            timerMap[timer] = 1
-        }
+        return lanternFishTimer.sum()
     }
 }

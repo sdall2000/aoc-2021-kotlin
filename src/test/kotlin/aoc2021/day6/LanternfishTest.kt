@@ -13,7 +13,7 @@ internal class LanternfishTest {
 
         val lanternfish = Lanternfish()
 
-        assertEquals(26, lanternfish.countLanternfishGrowth(lanternFishCounts, 18))
+        assertEquals(26, lanternfish.getLanternFishPopulation(lanternFishCounts, 18))
     }
 
     @Test
@@ -22,7 +22,7 @@ internal class LanternfishTest {
 
         val lanternfish = Lanternfish()
 
-        assertEquals(5934, lanternfish.countLanternfishGrowth(lanternFishCounts, 80))
+        assertEquals(5934, lanternfish.getLanternFishPopulation(lanternFishCounts, 80))
     }
 
     @Test
@@ -34,7 +34,7 @@ internal class LanternfishTest {
 
         val lanternfish = Lanternfish()
 
-        assertEquals(343441, lanternfish.countLanternfishGrowth(lanternFishCounts, 80))
+        assertEquals(343441, lanternfish.getLanternFishPopulation(lanternFishCounts, 80))
     }
 
     @Test
@@ -46,6 +46,6 @@ internal class LanternfishTest {
 
         val lanternfish = Lanternfish()
 
-        assertEquals(1569108373832, lanternfish.countLanternfishGrowth(lanternFishCounts, 256))
+        assertEquals(1569108373832, lanternfish.getLanternFishPopulation(lanternFishCounts, 256))
     }
 }
