@@ -38,8 +38,8 @@ object PuzzleInputTestUtils {
             .map(String::toInt)
     }
 
-    fun getPuzzleInputLinesIntArray(puzzleFileName: String): Array<Int> {
+    fun getPuzzleInputLinesIntArray(puzzleFileName: String): IntArray {
         return getPuzzleInputLinesIntList(puzzleFileName)
-            .toTypedArray()
+            .toIntArray()
     }
 }
