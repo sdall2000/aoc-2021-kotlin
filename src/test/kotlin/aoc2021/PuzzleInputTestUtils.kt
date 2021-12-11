@@ -42,4 +42,8 @@ object PuzzleInputTestUtils {
         return getPuzzleInputLinesIntList(puzzleFileName)
             .toIntArray()
     }
+
+    fun getPuzzleInputLinesIntArraySingleLine(puzzleFileName: String): IntArray {
+        return getPuzzleInputFile(puzzleFileName).readLines()[0].split(",").map(String::toInt).toIntArray()
+    }
 }
