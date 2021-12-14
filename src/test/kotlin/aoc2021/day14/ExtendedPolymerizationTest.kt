@@ -1,4 +1,4 @@
-package day14
+package aoc2021.day14
 
 import aoc2021.PuzzleInputTestUtils
 import org.junit.jupiter.api.Test
@@ -23,6 +23,24 @@ internal class ExtendedPolymerizationTest {
         val extendedPolymerization = ExtendedPolymerization()
 
         assertEquals(0, extendedPolymerization.part1(lines, 40))
+    }
+
+    @Test
+    fun part1New() {
+        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
+
+        val extendedPolymerization = ExtendedPolymerization()
+
+        assertEquals(2435, extendedPolymerization.part2New(lines, 10))
+    }
+
+    @Test
+    fun part2New() {
+        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
+
+        val extendedPolymerization = ExtendedPolymerization()
+
+        assertEquals(0, extendedPolymerization.part2New(lines, 40))
     }
 
     @Test
