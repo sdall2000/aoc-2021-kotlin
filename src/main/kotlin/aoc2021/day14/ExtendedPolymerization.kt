@@ -1,5 +1,8 @@
 package aoc2021.day14
 
+import java.util.*
+import kotlin.collections.HashMap
+
 class ExtendedPolymerization {
     fun part1(lines: List<String>, steps: Int): Long {
         val template = lines[0].trim()
@@ -94,7 +97,57 @@ class ExtendedPolymerization {
             println("Node $t has pair $u")
         }
 
+        // Now, build up the nodes.
+        val nodes = HashMap<String, Node>()
+
+        // First, create a node object with no children for each entry.
+        pairTree.keys.forEach { key ->
+            nodes[key] = Node(key)
+        }
+
+        // Now, set the left/right for each node.
+        nodes.forEach { (key, node) ->
+            val insertChar = pairInsertionRules[key]!!
+
+            val leftKey = key[0] + insertChar
+            val rightKey = insertChar + key[1]
+
+            node.left = nodes[leftKey]
+            node.right = nodes[rightKey]
+        }
+
+        printLevel(nodes, nodes.keys.first(), 4)
+
         return 0
+    }
+
+    fun printLevel(nodes:Map<String, Node>, root:String, desiredLevel:Int) {
+        val rootNode = nodes[root]!!
+
+        var currentLevel = 1
+
+        var queue = LinkedList<Node>()
+        queue.add(rootNode)
+
+        while (!queue.isEmpty()) {
+            if (currentLevel == desiredLevel) {
+                queue.forEach {
+                    print("${it.value} ")
+                }
+                queue.clear()
+            } else {
+                val newQueue = LinkedList<Node>()
+
+                queue.forEach {
+                    newQueue.add(it.left!!)
+                    newQueue.add(it.right!!)
+                }
+
+                currentLevel++
+
+                queue = newQueue
+            }
+        }
     }
 
 //    val counts = HashMap<Char, Long>()
@@ -147,4 +200,4 @@ class ExtendedPolymerization {
 
 }
 
-data class Node(val value:String, val left:Node?, val right:Node?)
+data class Node(val value:String, var left:Node? = null, var right:Node? = null)
