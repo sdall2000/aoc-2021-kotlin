@@ -67,7 +67,7 @@ class ExtendedPolymerization {
         return max - min
     }
 
-    fun part2New(lines: List<String>, steps: Int): Long {
+    fun part1WithNodes(lines: List<String>, steps: Int): Long {
         val template = lines[0].trim()
 
         val pairInsertionRules = HashMap<String, String>()
@@ -80,32 +80,88 @@ class ExtendedPolymerization {
             }
         }
 
-        val pairTree = HashMap<String, Pair<String, String>>()
+        var sb = StringBuilder(template)
 
-        pairInsertionRules.forEach { v, c ->
-            val node = pairTree[v]
+        println("Start: $template")
 
-            val left = v[0] + c
-            val right = c + v[1]
+        repeat(steps) {
+            val newSb = StringBuilder()
 
-            if (node == null) {
-                pairTree[v] = Pair(left, right)
+            var first = true
+
+            for (index in 0 until sb.length - 1) {
+                val pair = sb.substring(index, index + 2)
+                val insert = pairInsertionRules[pair]
+
+                if (insert != null) {
+                    if (first) {
+                        newSb.append(pair[0] + insert + pair[1])
+                        first = false
+                    } else {
+                        newSb.append(insert + pair[1])
+                    }
+                }
+            }
+
+            println("Iteration ${it + 1}: $newSb")
+
+            sb = newSb
+
+//            println("After step $it: $sb")
+        }
+
+        val counts = HashMap<Char, Long>()
+
+        sb.forEach {
+            if (counts.contains(it)) {
+                val v = counts[it]!!
+                counts[it] = v + 1
+            } else {
+                counts[it] = 1
             }
         }
 
-        pairTree.forEach { t, u ->
-            println("Node $t has pair $u")
+        val max = counts.values.maxOf { it }
+        val min = counts.values.minOf { it }
+
+
+        // Not 20
+
+        return max - min
+    }
+
+    fun queueBasedNodeTraversal(lines: List<String>, steps: Int): Long {
+        val template = lines[0].trim()
+
+        // Associates the character pair with the character that gets inserted between them.
+        // CH -> B
+        // HH -> N
+        // CB -> H
+        // etc.
+        val pairInsertionRules = HashMap<String, String>()
+        lines.forEachIndexed { index, line ->
+            if (index >= 2) {
+                val (pair, ch) = line.split(" -> ")
+
+                pairInsertionRules[pair] = ch
+            }
         }
 
-        // Now, build up the nodes.
+        // Associates the character pair with a Node object.
+        // CH -> Node(value=CH, left=Node, right=Node)
+        // HH -> Node(value=HH, left=Node, right=Node)
+        // CB -> Node(value=CB, left=Node, right=Node)
         val nodes = HashMap<String, Node>()
 
         // First, create a node object with no children for each entry.
-        pairTree.keys.forEach { key ->
+        // CH -> Node(value=CH, left=null, right=null)
+        // HH -> Node(value=HH, left=null, right=null)
+        // CB -> Node(value=CB, left=null, right=null)
+        pairInsertionRules.keys.forEach { key ->
             nodes[key] = Node(key)
         }
 
-        // Now, set the left/right for each node.
+        // Now that each node has been created, set the left/right for each node.
         nodes.forEach { (key, node) ->
             val insertChar = pairInsertionRules[key]!!
 
@@ -116,23 +172,79 @@ class ExtendedPolymerization {
             node.right = nodes[rightKey]
         }
 
-        printLevel(nodes, nodes.keys.first(), 4)
+        val charCountMap = HashMap<Char, Long>()
 
-        return 0
+        var lastPair = ""
+
+        val sb = null
+
+        for (index in 0 until template.length - 1) {
+            val isLast = index == template.length - 2
+
+            val pair = template.substring(index, index + 2)
+
+            println("Processing pair $pair")
+//            val localCharCountMap = printLevel(nodes, pair, steps, cache)
+            recursePrintLevel(0, nodes[pair]!!, steps, charCountMap)
+            if (isLast) {
+                applyCount(charCountMap, pair[1].toString())
+//                sb.append(pair[1].toString())
+            }
+            println()
+//            println("String: $sb")
+//            sb.clear()
+            // Remove the very last character so it's not counted twice.
+//            if (lastPair.isNotEmpty()) {
+//                val current = charCountMap[lastPair[1]]
+//                charCountMap[lastPair[1]] = current!! - 1
+//            }
+
+            lastPair = pair
+        }
+
+        return (charCountMap.maxOf { it.value} - charCountMap.minOf { it.value }).toLong()
     }
 
-    fun printLevel(nodes:Map<String, Node>, root:String, desiredLevel:Int) {
+    private fun recursePrintLevel(currentLevel:Int, rootNode:Node, desiredLevel:Int, results:MutableMap<Char, Long>, sb:StringBuilder? = null) {
+        if (currentLevel == desiredLevel) {
+//            print(" ${rootNode.value}")
+            applyCount(results, rootNode.value[0].toString())
+            sb?.append(rootNode.value[0])
+        } else {
+            recursePrintLevel(currentLevel + 1, rootNode.left!!, desiredLevel, results, sb)
+            recursePrintLevel(currentLevel + 1, rootNode.right!!, desiredLevel, results, sb)
+        }
+    }
+
+    private fun printLevel(nodes:Map<String, Node>, root:String, desiredLevel:Int, cache:MutableMap<String, MutableMap<Char, Long>>):MutableMap<Char, Long> {
+        var charCountMap = cache[root]
+        if (charCountMap != null) {
+            println("Cache hit for $root")
+            return charCountMap
+        } else {
+            charCountMap = HashMap()
+        }
+
         val rootNode = nodes[root]!!
 
-        var currentLevel = 1
+        var currentLevel = 0
 
         var queue = LinkedList<Node>()
         queue.add(rootNode)
 
         while (!queue.isEmpty()) {
+
+            println("Processing level ${currentLevel + 1}.  Queue has ${queue.size} items")
+
             if (currentLevel == desiredLevel) {
-                queue.forEach {
-                    print("${it.value} ")
+
+                queue.forEachIndexed() { index, it ->
+//                    print("${it.value} ")
+                    if (index == 0) {
+                        applyCount(charCountMap, it.value)
+                    } else {
+                        applyCount(charCountMap, it.value[1].toString())
+                    }
                 }
                 queue.clear()
             } else {
@@ -146,6 +258,21 @@ class ExtendedPolymerization {
                 currentLevel++
 
                 queue = newQueue
+            }
+        }
+
+        cache[root] = charCountMap
+
+        return charCountMap
+    }
+
+    private fun applyCount(charCountMap:MutableMap<Char, Long>, value:String) {
+        value.forEach {
+            if (charCountMap.contains(it)) {
+                val count = charCountMap[it]!!
+                charCountMap[it] = count + 1
+            } else {
+                charCountMap[it] = 1
             }
         }
     }

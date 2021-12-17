@@ -17,12 +17,22 @@ internal class ExtendedPolymerizationTest {
     }
 
     @Test
+    fun part1Part2New() {
+        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
+
+        val extendedPolymerization = ExtendedPolymerization()
+
+        assertEquals(2435, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
+    }
+
+    @Test
     fun part2() {
         val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
 
         val extendedPolymerization = ExtendedPolymerization()
 
-        assertEquals(0, extendedPolymerization.part1(lines, 40))
+//        assertEquals(0, extendedPolymerization.part1(lines, 40))
+        assertEquals(0, extendedPolymerization.queueBasedNodeTraversal(lines, 40))
     }
 
     @Test
@@ -31,7 +41,7 @@ internal class ExtendedPolymerizationTest {
 
         val extendedPolymerization = ExtendedPolymerization()
 
-        assertEquals(2435, extendedPolymerization.part2New(lines, 10))
+        assertEquals(2435, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
     }
 
     @Test
@@ -40,7 +50,7 @@ internal class ExtendedPolymerizationTest {
 
         val extendedPolymerization = ExtendedPolymerization()
 
-        assertEquals(0, extendedPolymerization.part2New(lines, 40))
+        assertEquals(0, extendedPolymerization.queueBasedNodeTraversal(lines, 40))
     }
 
     @Test
@@ -49,6 +59,15 @@ internal class ExtendedPolymerizationTest {
 
         val extendedPolymerization = ExtendedPolymerization()
 
-        assertEquals(1588, extendedPolymerization.part1(lines, 10))
+        assertEquals(1588, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
+    }
+    @Test
+
+    fun part1SampleFourIterations() {
+        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14Sample.txt")
+
+        val extendedPolymerization = ExtendedPolymerization()
+
+        assertEquals(1588, extendedPolymerization.queueBasedNodeTraversal(lines, 2))
     }
 }

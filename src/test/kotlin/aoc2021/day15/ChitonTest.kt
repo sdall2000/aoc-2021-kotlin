@@ -11,7 +11,7 @@ internal class ChitonTest {
 
         val chiton = Chiton()
 
-        assertEquals(0, chiton.lowestTotalRisk(lines))
+        assertEquals(40, chiton.lowestTotalRisk(lines))
     }
 
     @Test
