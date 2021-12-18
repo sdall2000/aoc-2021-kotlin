@@ -1,6 +1,7 @@
 package aoc2021.day15
 
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 
 class Chiton {
     fun lowestTotalRisk(lines: List<String>): Int {
@@ -16,9 +17,21 @@ class Chiton {
 
         val point = Point(x, y)
 
+        val bestScore = AtomicInteger(simplePathCost(lines))
+
 //        visitedPoints.add(point)
 
-        return traverse(lines, point, visitedPoints, goalPoint, 0, false)!!
+        return traverse(lines, point, visitedPoints, goalPoint, 0, bestScore,false)!!
+    }
+
+    private fun simplePathCost(lines: List<String>): Int {
+        var sum = lines[0].sumOf { it.digitToInt() }
+
+        sum += lines.sumOf { it[0].digitToInt() }
+
+        println("Simple path costs $sum")
+
+        return sum
     }
 
     private fun traverse(
@@ -27,6 +40,7 @@ class Chiton {
         visitedPoints: List<Point>,
         goalPoint: Point,
         currentScore: Int,
+        bestScore: AtomicInteger,
         debug: Boolean = false
     ): Int? {
         if (debug) {
@@ -48,12 +62,20 @@ class Chiton {
 
         if (tryPoint != Point(0, 0)) {
             score = currentScore + lines[tryPoint.y][tryPoint.x].digitToInt()
+
+            // We can quit if we exceeded the best score.
+            if (score > bestScore.get()) {
+                return null
+            }
         }
 
         if (debug) println("Current point score is ${lines[tryPoint.y][tryPoint.x]} for a total of $score")
 
         if (tryPoint == goalPoint) {
             if (debug) println("Reached the final point, total score is $score")
+            if (score < bestScore.get()) {
+                bestScore.set(score)
+            }
             return score
         }
 
@@ -61,18 +83,17 @@ class Chiton {
         localVisitedPoints.addAll(visitedPoints)
         localVisitedPoints.add(tryPoint)
 
-//        val north = Point(tryPoint.x, tryPoint.y - 1)
+        val north = Point(tryPoint.x, tryPoint.y - 1)
         val east = Point(tryPoint.x + 1, tryPoint.y)
         val south = Point(tryPoint.x, tryPoint.y + 1)
-//        val west = Point(tryPoint.x - 1, tryPoint.y)
+        val west = Point(tryPoint.x - 1, tryPoint.y)
 
-//        val points = arrayOf(north, east, south, west)
         val points = arrayOf(east, south)
 
         var min: Int? = null
 
         points.forEach { p ->
-            val s = traverse(lines, p, localVisitedPoints, goalPoint, score, debug)
+            val s = traverse(lines, p, localVisitedPoints, goalPoint, score, bestScore, debug)
 
             if (s != null) {
                 if (min == null || s < min!!) {
