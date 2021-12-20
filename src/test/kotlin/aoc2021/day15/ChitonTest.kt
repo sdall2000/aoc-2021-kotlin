@@ -20,17 +20,16 @@ internal class ChitonTest {
 
         val chiton = Chiton()
 
-        // Not 421
-
-        assertEquals(0, chiton.lowestTotalRisk(lines))
+        assertEquals(415, chiton.lowestTotalRisk(lines))
     }
 
     @Test
-    fun lowestTotalRiskTestSmallSample() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day15SmallSample.txt")
+    fun lowestTotalRiskTest5x() {
+        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day15.txt")
 
         val chiton = Chiton()
 
-        assertEquals(0, chiton.lowestTotalRisk(lines))
+        // Takes two hours to complete!
+        assertEquals(2864, chiton.lowestTotalRisk5x(lines))
     }
 }

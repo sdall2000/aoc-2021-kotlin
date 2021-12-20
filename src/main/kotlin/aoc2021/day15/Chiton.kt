@@ -1,180 +1,166 @@
 package aoc2021.day15
 
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
+import aoc2021.day15.astar.Graph
+import aoc2021.day15.astar.RouteFinder
 
 class Chiton {
     fun lowestTotalRisk(lines: List<String>): Int {
-        var x = 0
-        var y = 0
+        val nodes = HashSet<ChitonNode>()
+        val connections = HashMap<String, Set<String>>()
 
-        val goalY = lines.size - 1
-        val goalX = lines[0].length - 1
+        setNodesAndConnections(lines, nodes, connections)
 
-        val goalPoint = Point(goalX, goalY)
+        val domain = Graph(nodes, connections)
+        val routeFinder = RouteFinder(domain, ChiltonNextNodeScorer(), ChiltonHeuristicScorer())
 
-        val visitedPoints = ArrayList<Point>()
+        val maxX = lines[0].length - 1
+        val maxY = lines.size - 1
 
-        val point = Point(x, y)
+        val startKey = createKey(0, 0)
+        val endKey = createKey(maxX, maxY)
 
-        val bestScore = AtomicInteger(simplePathCost(lines))
+        // Use A-Star algorithm.  Ported to Kotlin from here: https://www.baeldung.com/java-a-star-pathfinding
+        val route = routeFinder.findRoute(domain.getNode(startKey), domain.getNode(endKey))
 
-//        visitedPoints.add(point)
-
-        return traverse(lines, point, visitedPoints, goalPoint, 0, bestScore,false)!!
+        return route.sumOf {
+            it.risk
+        } - domain.getNode(startKey).risk
     }
 
-    private fun simplePathCost(lines: List<String>): Int {
-        var sum = lines[0].sumOf { it.digitToInt() }
+    fun lowestTotalRisk5x(lines: List<String>): Int {
 
-        sum += lines.sumOf { it[0].digitToInt() }
+        val newLines = modifyInput(lines)
 
-        println("Simple path costs $sum")
+        val nodes = HashSet<ChitonNode>()
+        val connections = HashMap<String, Set<String>>()
 
-        return sum
+        setNodesAndConnections(newLines, nodes, connections)
+
+        val domain = Graph(nodes, connections)
+        val routeFinder = RouteFinder(domain, ChiltonNextNodeScorer(), ChiltonHeuristicScorer())
+
+        val maxX = newLines[0].length - 1
+        val maxY = newLines.size - 1
+
+        val startKey = createKey(0, 0)
+        val endKey = createKey(maxX, maxY)
+
+        val route = routeFinder.findRoute(domain.getNode(startKey), domain.getNode(endKey))
+
+        return route.sumOf {
+            it.risk
+        } - domain.getNode(startKey).risk
     }
 
-    private fun traverse(
-        lines: List<String>,
-        tryPoint: Point,
-        visitedPoints: List<Point>,
-        goalPoint: Point,
-        currentScore: Int,
-        bestScore: AtomicInteger,
-        debug: Boolean = false
-    ): Int? {
-        if (debug) {
-            println("Path so far: ")
-            visitedPoints.forEach { p ->
-                println("   $p")
+    private fun modifyInput(lines: List<String>): List<String> {
+        val newLines = ArrayList<String>()
+
+        lines.forEach { line ->
+            val intArray = lineToIntArray(line)
+            val sb = StringBuilder()
+
+            repeat(5) {
+                sb.append(intArray.joinToString(""))
+                intArray.forEachIndexed { index, number ->
+                    var newNumber = number + 1
+                    if (newNumber == 10) {
+                        newNumber = 1
+                    }
+                    intArray[index] = newNumber
+                }
             }
+
+            newLines.add(sb.toString())
         }
 
-        if (debug) println("Trying position $tryPoint.  Current score is $currentScore")
+        // Now, the width of the lines are adjusted to be 5x.
+        // We need to do the same for the number of lines.
 
-        if (!isValidPosition(lines, tryPoint, visitedPoints)) {
-            if (debug) println("Position is not valid.")
-            return null
+        val expandedWidthListOfIntArray = mutableListOf<IntArray>()
+
+        newLines.forEach { line ->
+            expandedWidthListOfIntArray.add(lineToIntArray(line))
         }
 
-        // Don't count the starting square in the score.
-        var score = 0
+        val newNewLines = mutableListOf<String>()
 
-        if (tryPoint != Point(0, 0)) {
-            score = currentScore + lines[tryPoint.y][tryPoint.x].digitToInt()
+        StringBuilder()
 
-            // We can quit if we exceeded the best score.
-            if (score > bestScore.get()) {
-                return null
+        repeat(5) {
+            expandedWidthListOfIntArray.forEach {
+                newNewLines.add(it.joinToString(""))
             }
-        }
 
-        if (debug) println("Current point score is ${lines[tryPoint.y][tryPoint.x]} for a total of $score")
-
-        if (tryPoint == goalPoint) {
-            if (debug) println("Reached the final point, total score is $score")
-            if (score < bestScore.get()) {
-                bestScore.set(score)
-            }
-            return score
-        }
-
-        val localVisitedPoints = ArrayList<Point>()
-        localVisitedPoints.addAll(visitedPoints)
-        localVisitedPoints.add(tryPoint)
-
-        val north = Point(tryPoint.x, tryPoint.y - 1)
-        val east = Point(tryPoint.x + 1, tryPoint.y)
-        val south = Point(tryPoint.x, tryPoint.y + 1)
-        val west = Point(tryPoint.x - 1, tryPoint.y)
-
-        val points = arrayOf(east, south)
-
-        var min: Int? = null
-
-        points.forEach { p ->
-            val s = traverse(lines, p, localVisitedPoints, goalPoint, score, bestScore, debug)
-
-            if (s != null) {
-                if (min == null || s < min!!) {
-                    min = s
+            expandedWidthListOfIntArray.forEach {
+                it.forEachIndexed { index, number ->
+                    var newNumber = number + 1
+                    if (newNumber == 10) {
+                        newNumber = 1
+                    }
+                    it[index] = newNumber
                 }
             }
         }
 
-//        visitedPoints.remove(point)
-
-        if (debug) println("Returning min of $min")
-        return min
+        return newNewLines
     }
 
-    private fun isValidPosition(lines: List<String>, point: Point, visitedPoints: List<Point>): Boolean {
-        return point.y in lines.indices && point.x in lines[0].indices && !visitedPoints.contains(point)
+    private fun lineToIntArray(line: String): IntArray {
+        val intArray = IntArray(line.length)
+
+        line.forEachIndexed { index, ch ->
+            intArray[index] = ch.digitToInt()
+        }
+
+        return intArray
     }
 
-    fun d(lines: List<String>): Int {
-        var x = 0
-        var y = 0
+    private fun setNodesAndConnections(
+        lines: List<String>,
+        nodes: MutableSet<ChitonNode>,
+        connections: MutableMap<String, Set<String>>
+    ) {
+        val rows = lines.size
+        val cols = lines[0].length
 
-        val goalY = lines.size - 1
-        val goalX = lines[0].length - 1
+        val maxY = rows - 1
+        val maxX = cols - 1
 
-        // Maps a position to a node.
-        val nodeMap = HashMap<Point, Node>()
+        lines.forEachIndexed { y, line ->
+            IntArray(cols)
 
-        for (y in lines.indices) {
-            val row = lines[y]
-            for (x in lines[0].indices) {
-                val point = Point(x, y)
-                val node = Node(point, row[x].digitToInt())
+            line.forEachIndexed { x, chr ->
+                val risk = chr.digitToInt()
 
-                nodeMap[point] = node
+                val nodeKey = createKey(x, y)
+
+                val chitonNode = ChitonNode(nodeKey, x, y, risk)
+                nodes.add(chitonNode)
+
+                // Since this is a square grid, we can construct the neighbor keys.
+                val north = intArrayOf(x, y - 1)
+                val east = intArrayOf(x + 1, y)
+                val south = intArrayOf(x, y + 1)
+                val west = intArrayOf(x - 1, y)
+
+                val candidateNeighbors = arrayOf(north, south, east, west)
+
+                val neighbors = mutableSetOf<String>()
+
+                candidateNeighbors.forEach {
+                    if (isValidXY(maxX, maxY, it[0], it[1])) {
+                        neighbors.add(createKey(it[0], it[1]))
+                    }
+                }
+
+                connections[nodeKey] = neighbors
             }
         }
-
-        // Now that we have a mapping of points to nodes, let's build the relationships between each node.
-        val nodeLinkMap = HashMap<Node, Set<Node>>()
-
-        nodeMap.forEach { (point, node) ->
-            val neighborNodeSet = HashSet<Node>()
-
-            // The four possible neighbor points to try.
-            val north = Point(point.x, point.y - 1)
-            val east = Point(point.x + 1, point.y)
-            val south = Point(point.x, point.y + 1)
-            val west = Point(point.x - 1, point.y)
-
-            arrayOf(north, east, south, west).filter {
-                isPointValid(lines, it)
-            }.forEach {
-                neighborNodeSet.add(nodeMap[it]!!)
-            }
-
-            nodeLinkMap[node] = neighborNodeSet
-        }
-
-        val goalPoint = Point(goalX, goalY)
-
-        return 0
-
     }
 
-    private fun isPointValid(lines: List<String>, point: Point):Boolean {
-        return point.y in lines.indices && point.x in lines[0].indices
+    private fun isValidXY(maxX: Int, maxY: Int, x: Int, y: Int): Boolean {
+        return x in 0..maxX && y in 0..maxY
     }
+
+    private fun createKey(x: Int, y: Int): String = "$x/$y"
 }
-
-
-data class Node(val point: Point, val cost: Int) : Comparator<Node> {
-    override fun compare(o1: Node?, o2: Node?): Int {
-        if (o1!!.cost < o2!!.cost) {
-            return -1
-        } else if (o1.cost > o2.cost) {
-            return 1
-        }
-
-        return 0
-    }
-}
-
-data class Point(val x: Int, val y: Int)
