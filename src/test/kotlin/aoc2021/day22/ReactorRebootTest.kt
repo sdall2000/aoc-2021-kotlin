@@ -11,7 +11,7 @@ internal class ReactorRebootTest {
 
         val reactorReboot = ReactorReboot()
 
-        assertEquals(623748, reactorReboot.countOnCubes(lines, 50))
+        assertEquals(623748, reactorReboot.countOnCubes2(lines, 50))
     }
 
     @Test
@@ -20,6 +20,7 @@ internal class ReactorRebootTest {
 
         val reactorReboot = ReactorReboot()
 
+        // 600563608709 Too low
         assertEquals(623748, reactorReboot.countOnCubes2(lines))
     }
 }
