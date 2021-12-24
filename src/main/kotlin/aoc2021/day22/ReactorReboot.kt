@@ -3,105 +3,75 @@ package aoc2021.day22
 import kotlin.math.abs
 
 class ReactorReboot {
-    fun countOnCubes(lines: List<String>, maxValue: Int? = null): Long {
-        val coordinateSet = mutableSetOf<String>()
+    fun countOnCubes(lines: List<String>, maxValue: Long? = null): Long {
+        var cubes = mutableListOf<Cube>()
 
-        lines.forEach { line ->
-            val turnOn = line.startsWith("on")
+        lines.forEachIndexed { lineIndex, line ->
+                val turnOn = line.startsWith("on")
 
-            val onOffStr = if (turnOn) "on " else "off "
+                val onOffStr = if (turnOn) "on " else "off "
 
-            val (xStr, yStr, zStr) = line.substringAfter(onOffStr).split(",")
+                val (xStr, yStr, zStr) = line.substringAfter(onOffStr).split(",")
 
-            val (minX, maxX) = buildRange(xStr.substringAfter("x="))
-            val (minY, maxY) = buildRange(yStr.substringAfter("y="))
-            val (minZ, maxZ) = buildRange(zStr.substringAfter("z="))
+                val (minX, maxX) = buildRange(xStr.substringAfter("x="))
+                val (minY, maxY) = buildRange(yStr.substringAfter("y="))
+                val (minZ, maxZ) = buildRange(zStr.substringAfter("z="))
 
-            if (maxValue == null || inRange(maxValue, intArrayOf(minX, maxX, minY, maxY, minZ, maxZ))) {
-                for (x in minX..maxX) {
-                    for (y in minY..maxY) {
-                        for (z in minZ..maxZ) {
-                            val key = buildPositionKey(x, y, z)
-                            if (turnOn) {
-                                coordinateSet.add(key)
-                            } else {
-                                coordinateSet.remove(key)
-                            }
-                        }
+                if (minX > maxX || minY > maxY || minZ > maxZ) {
+                    println("Nope")
+                }
+
+                if (maxValue == null || inRange(maxValue, longArrayOf(minX, maxX, minY, maxY, minZ, maxZ))) {
+                    val cube = Cube(minX, maxX, minY, maxY, minZ, maxZ)
+
+                    if (turnOn) {
+                        cubes = union(cubes, cube)
+                    } else {
+                        cubes = subtract(cubes, cube)
                     }
                 }
-            }
         }
 
-        return coordinateSet.size.toLong()
+        return cubes.sumOf { cube ->
+            cube.cubeCount()
+        }
     }
 
-    fun countOnCubes2(lines: List<String>, maxValue: Int? = null): Long {
-        val coordinateSet = mutableSetOf<String>()
-
-        var onCubes = mutableListOf<Cube>()
-        val offCubes = mutableListOf<Cube>()
-
-        lines.forEach { line ->
-            val turnOn = line.startsWith("on")
-
-            val onOffStr = if (turnOn) "on " else "off "
-
-            val (xStr, yStr, zStr) = line.substringAfter(onOffStr).split(",")
-
-            val (minX, maxX) = buildRange(xStr.substringAfter("x="))
-            val (minY, maxY) = buildRange(yStr.substringAfter("y="))
-            val (minZ, maxZ) = buildRange(zStr.substringAfter("z="))
-
-            if (maxValue == null || inRange(maxValue, intArrayOf(minX, maxX, minY, maxY, minZ, maxZ))) {
-                val cube = Cube(minX, maxX, minY, maxY, minZ, maxZ)
-
-                if (turnOn) {
-                    onCubes.add(cube)
-                } else {
-                    offCubes.add(cube)
-                }
-            }
-        }
-
-        // First, rebuild the on cubes so there are no more intersections.
-        println("On cube original size=${onCubes.size}")
-
+    private fun union(cubesIn: MutableList<Cube>, cube: Cube): MutableList<Cube> {
         var done = false
+
+        var outCubes = mutableListOf<Cube>()
+        outCubes.addAll(cubesIn)
 
         val cubesAltered = mutableSetOf<String>()
 
         while (!done) {
             val cubes = mutableListOf<Cube>()
-            cubes.addAll(onCubes)
+            cubes.addAll(outCubes)
 
             done = true
 
-            for (thisCubeIndex in onCubes.indices) {
+            for (thisCubeIndex in outCubes.indices) {
                 if (done) {
-                    for (otherCubeIndex in onCubes.indices) {
-                        if (done) {
-                            if (thisCubeIndex != otherCubeIndex) {
-                                val thisCube = onCubes[thisCubeIndex]
-                                val otherCube = onCubes[otherCubeIndex]
+                    val thisCube = outCubes[thisCubeIndex]
 
-                                val newCubes = thisCube.remove(otherCube)
+                    if (thisCube.intersects(cube)) {
+                        val newCubes = thisCube.remove(cube)
 
-                                if (newCubes.isNotEmpty()) {
-                                    if (!cubes.remove(thisCube)) {
-                                        println("Failed to remove cube $thisCube")
-                                    }
+                        if (!cubes.remove(thisCube)) {
+                            println("Failed to remove cube $thisCube")
+                        }
 
-                                    cubes.addAll(newCubes)
+                        cubes.addAll(newCubes)
 //                            println("Updated on cubes size: ${cubes.size}")
 
-                                    val cubeString = thisCube.toString()
+                        val cubeString = thisCube.toString()
 
-                                    if (cubesAltered.contains(cubeString)) {
-                                        println("Whaaaaaa $thisCube")
-                                    } else {
-                                        cubesAltered.add(cubeString)
-                                    }
+                        if (cubesAltered.contains(cubeString)) {
+                            println("Whaaaaaa $thisCube")
+                        } else {
+                            cubesAltered.add(cubeString)
+                        }
 
 //                            println("originalCube: $onCube")
 //                            println("intersectingCube: $onCube3")
@@ -110,22 +80,28 @@ class ReactorReboot {
 //                                    newCubes.forEach { c ->
 //                                println("  $c")
 //                                    }
-                                    done = false
-                                }
-                            }
-                        }
+                        done = false
                     }
                 }
             }
 
             if (!done) {
-                onCubes = cubes
+                outCubes = cubes
             }
         }
 
-        println("Doing off cubes")
+        outCubes.add(cube)
 
-        done = false
+        return outCubes
+    }
+
+    private fun subtract(cubesIn: MutableList<Cube>, cube: Cube): MutableList<Cube> {
+        var done = false
+
+        val cubesAltered = mutableSetOf<String>()
+
+        var onCubes = mutableListOf<Cube>()
+        onCubes.addAll(cubesIn)
 
         while (!done) {
             val cubes = mutableListOf<Cube>()
@@ -135,28 +111,27 @@ class ReactorReboot {
 
             for (thisCubeIndex in onCubes.indices) {
                 if (done) {
-                    for (offCubeIndex in offCubes.indices) {
-                        if (done) {
-                            val thisCube = onCubes[thisCubeIndex]
-                            val offCube = offCubes[offCubeIndex]
+                    val thisCube = onCubes[thisCubeIndex]
+                    val offCube = cube
 
-                            val newCubes = thisCube.remove(offCube)
+                    if (thisCube.intersects(offCube)) {
+                        val newCubes = thisCube.remove(offCube)
 
-                            if (newCubes.isNotEmpty()) {
-                                if (!cubes.remove(thisCube)) {
-                                    println("Failed to remove cube $thisCube")
-                                }
+//                        if (newCubes.isNotEmpty()) {
+                        if (!cubes.remove(thisCube)) {
+                            println("Failed to remove cube $thisCube")
+                        }
 
-                                cubes.addAll(newCubes)
+                        cubes.addAll(newCubes)
 //                            println("Updated on cubes size: ${cubes.size}")
 
-                                val cubeString = thisCube.toString()
+                        val cubeString = thisCube.toString()
 
-                                if (cubesAltered.contains(cubeString)) {
-                                    println("Whaaaaaa $thisCube")
-                                } else {
-                                    cubesAltered.add(cubeString)
-                                }
+                        if (cubesAltered.contains(cubeString)) {
+                            println("Whaaaaaa $thisCube")
+                        } else {
+                            cubesAltered.add(cubeString)
+                        }
 
 //                            println("originalCube: $onCube")
 //                            println("intersectingCube: $onCube3")
@@ -165,9 +140,8 @@ class ReactorReboot {
 //                                    newCubes.forEach { c ->
 //                                println("  $c")
 //                                    }
-                                done = false
-                            }
-                        }
+                        done = false
+//                        }
                     }
                 }
             }
@@ -177,17 +151,15 @@ class ReactorReboot {
             }
         }
 
-        return onCubes.sumOf {
-            it.size().toLong()
-        }
+        return onCubes
     }
 
     // Ensures that the first element is less than the second element
-    private fun buildRange(rangeStr: String): Pair<Int, Int> {
+    private fun buildRange(rangeStr: String): Pair<Long, Long> {
         val (num1, num2) = rangeStr.split("""..""")
 
-        val num1Val = num1.toInt()
-        val num2Val = num2.toInt()
+        val num1Val = num1.toLong()
+        val num2Val = num2.toLong()
 
         if (num1Val < num2Val) {
             return Pair(num1Val, num2Val)
@@ -196,11 +168,7 @@ class ReactorReboot {
         }
     }
 
-    private fun buildPositionKey(x: Int, y: Int, z: Int): String {
-        return "$x/$y/$z"
-    }
-
-    private fun inRange(maxValue: Int, number: IntArray): Boolean {
+    private fun inRange(maxValue: Long, number: LongArray): Boolean {
         number.forEach {
             if (abs(it) > maxValue) {
                 return false
@@ -210,8 +178,11 @@ class ReactorReboot {
     }
 }
 
-data class Cube(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int, val minZ: Int, val maxZ: Int) {
-    fun size(): Int = (maxX - minX) * (maxY - minY) * (maxZ - minZ)
+// Note that when we count the number of cubes contained in this cube, we are not calculating an area.
+// Rather, there is a single cube at each coordinate position.  So a cube with coordinates (0,1), (0,1), (0,1) (x/y/z)
+// does not have one cube.  It is actually eight.
+data class Cube(val minX: Long, val maxX: Long, val minY: Long, val maxY: Long, val minZ: Long, val maxZ: Long) {
+    fun cubeCount(): Long = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1)
 
     // Returns true if the other cube is inside this cube.  matching edges count as well.
     fun contains(other: Cube): Boolean {
@@ -220,11 +191,11 @@ data class Cube(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int, val 
                 other.minZ in minZ..maxZ && other.maxZ in minZ..maxZ
     }
 
-    // Returns true if the other cube intersects this cube.  Edges that touch do not count.
+    // Returns true if the other cube intersects this cube.  Edges that touch do count.
     fun intersects(other: Cube): Boolean {
-        return other.minX < maxX && other.maxX > minX &&
-                other.minY < maxY && other.maxY > minY &&
-                other.minZ < maxZ && other.maxZ > minZ
+        return other.minX <= maxX && other.maxX >= minX &&
+                other.minY <= maxY && other.maxY >= minY &&
+                other.minZ <= maxZ && other.maxZ >= minZ
     }
 
     fun intersect(other: Cube): Cube? {
@@ -272,39 +243,41 @@ data class Cube(val minX: Int, val maxX: Int, val minY: Int, val maxY: Int, val 
 
             // This is the area above the intersection.
             if (intersectCube.maxY < maxY) {
-                cubeList.add(Cube(minX, maxX, intersectCube.maxY, maxY, minZ, maxZ))
+                cubeList.add(Cube(minX, maxX, intersectCube.maxY + 1, maxY, minZ, maxZ))
                 newMaxY = intersectCube.maxY
             }
 
             // Area below the intersection
             if (intersectCube.minY > minY) {
-                cubeList.add(Cube(minX, maxX, minY, intersectCube.minY, minZ, maxZ))
+                cubeList.add(Cube(minX, maxX, minY, intersectCube.minY - 1, minZ, maxZ))
                 newMinY = intersectCube.minY
             }
 
             // Area to the right of the intersection
             if (intersectCube.maxX < maxX) {
-                cubeList.add(Cube(intersectCube.maxX, maxX, newMinY, newMaxY, minZ, maxZ))
+                cubeList.add(Cube(intersectCube.maxX + 1, maxX, newMinY, newMaxY, minZ, maxZ))
                 newMaxX = intersectCube.maxX
             }
 
             // Area to the left of the intersection
             if (intersectCube.minX > minX) {
-                cubeList.add(Cube(minX, intersectCube.minX, newMinY, newMaxY, minZ, maxZ))
+                cubeList.add(Cube(minX, intersectCube.minX - 1, newMinY, newMaxY, minZ, maxZ))
                 newMinX = intersectCube.minX
             }
 
+            // Area in front of the intersection
             if (intersectCube.maxZ < maxZ) {
-                cubeList.add(Cube(newMinX, newMaxX, newMinY, newMaxY, intersectCube.maxZ, maxZ))
+                cubeList.add(Cube(newMinX, newMaxX, newMinY, newMaxY, intersectCube.maxZ + 1, maxZ))
             }
 
+            // Area behind the intersection
             if (intersectCube.minZ > minZ) {
-                cubeList.add(Cube(newMinX, newMaxX, newMinY, newMaxY, minZ, intersectCube.minZ))
+                cubeList.add(Cube(newMinX, newMaxX, newMinY, newMaxY, minZ, intersectCube.minZ - 1))
             }
         } else {
-            // There is no intersection.  Return a copy of this cube.
-            // (Could we just add "this" instead of a copy?)
-//            cubeList.add(this.copy())
+            // There is no intersection, so this cube remains intact.
+            println("Cube had no intersection in minus")
+            cubeList.add(this)
         }
 
         return cubeList
