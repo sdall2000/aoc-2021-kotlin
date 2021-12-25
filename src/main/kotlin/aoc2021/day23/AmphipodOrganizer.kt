@@ -22,7 +22,7 @@ class AmphipodOrganizer {
     //      #########
 
     fun part1(lines: List<String>): Int {
-        val positions = Array(lines.size) { i -> charArrayOf('a') }
+        val positions = Array(lines.size) { charArrayOf() }
 
         lines.forEachIndexed { lineIndex, line ->
             positions[lineIndex] = line.toCharArray()
@@ -100,7 +100,7 @@ class Maze(val positions: Array<CharArray>, val homeYupper:Int, val homeYlower: 
     }
 
     private fun clonePositions(): Array<CharArray> {
-        val newPositions = Array(positions.size) { _ -> charArrayOf('a') }
+        val newPositions = Array(positions.size) { charArrayOf() }
 
         positions.forEachIndexed { rowIndex, charArray ->
             newPositions[rowIndex] = charArray.copyOf()
