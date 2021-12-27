@@ -13,16 +13,7 @@ internal class ExtendedPolymerizationTest {
 
         val extendedPolymerization = ExtendedPolymerization()
 
-        assertEquals(2435, extendedPolymerization.part1(lines, 10))
-    }
-
-    @Test
-    fun part1Part2New() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
-
-        val extendedPolymerization = ExtendedPolymerization()
-
-        assertEquals(2435, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
+        assertEquals(2_435, extendedPolymerization.maxMinusMinCount(lines, 10))
     }
 
     @Test
@@ -31,43 +22,6 @@ internal class ExtendedPolymerizationTest {
 
         val extendedPolymerization = ExtendedPolymerization()
 
-//        assertEquals(0, extendedPolymerization.part1(lines, 40))
-        assertEquals(0, extendedPolymerization.queueBasedNodeTraversal(lines, 40))
-    }
-
-    @Test
-    fun part1New() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
-
-        val extendedPolymerization = ExtendedPolymerization()
-
-        assertEquals(2435, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
-    }
-
-    @Test
-    fun part2New() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14.txt")
-
-        val extendedPolymerization = ExtendedPolymerization()
-
-        assertEquals(0, extendedPolymerization.queueBasedNodeTraversal(lines, 40))
-    }
-
-    @Test
-    fun part1Sample() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14Sample.txt")
-
-        val extendedPolymerization = ExtendedPolymerization()
-
-        assertEquals(1588, extendedPolymerization.queueBasedNodeTraversal(lines, 10))
-    }
-    @Test
-
-    fun part1SampleFourIterations() {
-        val lines = PuzzleInputTestUtils.getPuzzleInputLines("day14Sample.txt")
-
-        val extendedPolymerization = ExtendedPolymerization()
-
-        assertEquals(1588, extendedPolymerization.queueBasedNodeTraversal(lines, 2))
+        assertEquals(2_587_447_599_164, extendedPolymerization.maxMinusMinCount(lines, 40))
     }
 }
