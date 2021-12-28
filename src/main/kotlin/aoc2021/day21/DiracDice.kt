@@ -49,10 +49,10 @@ class DiracDice {
 
     // This was mostly converted verbatim from Jonathan Paulson's python solution.  Variable names more explicit.
     // The important thing to realize here, is the parameters represent the current player's turn,
-    // which could either be player 1 or player 2.  The Pair that is returned gives the current player's
-    // score and the other player's score.
+    // which could either be player 1 or player 2, and other player's state.
+    // Also, The Pair that is returned gives the current player's score and the other player's score.
     // Note in the recursive call (and processing of the results) everything is inverted to let the other player have
-    // their turn.
+    // their turn and score it properly.
     private fun countWin(
         currentPlayerPosition: Int,
         currentPlayerScore: Long,
