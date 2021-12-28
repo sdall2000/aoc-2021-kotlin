@@ -8,17 +8,13 @@ internal class DiracDiceTest {
     fun part1() {
         val diracDice = DiracDice()
 
-        assertEquals(412344, diracDice.part1(8, 3))
+        assertEquals(412_344, diracDice.part1(8, 3))
     }
 
     @Test
-    fun cubes() {
-        var value = 3L
+    fun part2() {
+        val diracDice = DiracDice()
 
-        repeat(20) {
-            println(value)
-
-            value *= 3
-        }
+        assertEquals(214_924_284_932_572, diracDice.part2(8, 3))
     }
 }
